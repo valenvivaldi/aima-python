@@ -4,7 +4,7 @@ from deap import base
 from deap import creator
 from deap import tools
 
-n =8
+n=8
 populationsize =50
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))

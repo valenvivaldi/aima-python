@@ -38,7 +38,7 @@ class NQueensProblem(Problem):
         new = list(state[:])
         new[move[0]] = move[1]
         #print("SE MUEVE LA REINA EN LA COLUMNA {} DE LA FILA {} A LA FILA {}".format(move[0], state[move[0]], move[1]))
-        return tuple(new) #PREGUNTAR PORQUE DEVUELVE UNA TUPLA!!!!!!!
+        return tuple(new)
 
     def conflicted(self, state, row, col):
         """Would placing a queen at (row, col) conflict with anything?"""
@@ -89,10 +89,10 @@ def generator(n, cant):
         configs.append(generate_random_state(n))
     return configs
 
-def hill_climbing_sideway_moves(problem):
+def hill_climbing_sideway_moves(problem,sideway_moves=25):
     """From the initial node, keep choosing the neighbor with highest value,
     stopping when no neighbor is better. [Figure 4.2]"""
-    sideway_moves = 10 # cantidad de movimientos tolerados hacia los lados(sin ir a un mejor estado, sino que igual)
+    #side_waymoves = cantidad de movimientos tolerados hacia los lados(sin ir a un mejor estado, sino que igual)
     current = Node(problem.initial)
     while True:
         neighbors = current.expand(problem)
@@ -113,32 +113,29 @@ def hill_climbing_sideway_moves(problem):
 
 
 
-def hill_climbing_random_restart(problem):
+def hill_climbing_random_restart(problem,restarts=10):
     """From the initial node, keep choosing the neighbor with highest value,
     stopping when no neighbor is better. [Figure 4.2]"""
-    restarts = 10 # cantidad de reinicios aleatorios al llegar a un estado inmejorable
+     # restarts = cantidad de reinicios aleatorios al llegar a un estado inmejorable
     current = Node(problem.initial)
-    best = current  #se lleva la cuenta del mejor estado hasta el momento
+    best = current  # se lleva la cuenta del mejor estado hasta el momento
     while True:
-        if problem.goal_test(current.state):
-            break
         if (problem.value(current.state) > problem.value(best.state)):
             best = current
-
+        if problem.goal_test(current.state):
+            break
         neighbors = current.expand(problem)
 
         if neighbors:
-            neighbor = argmax_random_tie(neighbors,key=lambda node: problem.value(node.state))
-            if problem.value(neighbor.state)>problem.value(current.state):
-                current=neighbor
+            neighbor = argmax_random_tie(neighbors, key=lambda node: problem.value(node.state))
+            if problem.value(neighbor.state) > problem.value(current.state):
+                current = neighbor
             else:
                 if restarts > 0:
                     restarts -= 1
                     current = Node(generate_random_state(problem.N))
                 else:
                     break
-
-
         else:
             if restarts > 0:
                 restarts -= 1
@@ -147,27 +144,56 @@ def hill_climbing_random_restart(problem):
                 break
     return current.state
 
-n = 8
+
 #generate_state(n)
 
 #eight_queens_problem = NQueensProblem(n, generate_state(n))
 #hill_climbing(eight_queens_problem)
-state = [2, 1, 2, 1,3,2,3,2]
-#state = [2, 0, 2, 1]
-print("PROBAMOS CON ESTADO INICIAL {}".format(state))
-
-eight_queens_problem = NQueensProblem(8,state)
-
-print("hill climbing")
-solution = hill_climbing(eight_queens_problem)
-print("solucion: {} con heuristica {}".format(solution,eight_queens_problem.value(solution)))
- # devuelve una state no un nodo , entonces no puedo ver el camino, sino al estado al cual llega
+stadistic=[0,0,0,0]
+samples=10
+for state in generator(8,samples):
+    #state = [2, 0, 2, 1]
+    print("PROBAMOS CON ESTADO INICIAL {}".format(state))
 
 
 
+    print("hill climbing")
+    eight_queens_problem = NQueensProblem(len(state),state)
+    solution = hill_climbing(eight_queens_problem)
+    if eight_queens_problem.value(solution) == 0 :
+        stadistic[0]+=1
+    print("solucion: {} con heuristica {}".format(solution,eight_queens_problem.value(solution)))
+     # devuelve una state no un nodo , entonces no puedo ver el camino, sino al estado al cual llega
 
-eight_queens_problem = NQueensProblem(8,state)
 
-print("hill climbing con reinicios aleatorios")
-solution = hill_climbing_random_restart(eight_queens_problem)
-print("solucion: {} con heuristica {}".format(solution,eight_queens_problem.value(solution)))
+    print("hilllimbing with sideway moves")
+    eight_queens_problem = NQueensProblem(len(state),state)
+    solution = hill_climbing_sideway_moves(eight_queens_problem,0)
+    if eight_queens_problem.value(solution) == 0 :
+        stadistic[1]+=1
+    print("solucion: {} con heuristica {}".format(solution,eight_queens_problem.value(solution)))
+
+
+
+
+    print("hill climbing con reinicios aleatorios")
+    eight_queens_problem = NQueensProblem(len(state),state)
+    solution = hill_climbing_random_restart(eight_queens_problem)
+    if eight_queens_problem.value(solution) == 0 :
+        stadistic[2]+=1
+    print("solucion: {} con heuristica {}".format(solution,eight_queens_problem.value(solution)))
+
+
+
+    print("simulated annealing")
+    eight_queens_problem = NQueensProblem(len(state),state)
+    solution = simulated_annealing(eight_queens_problem,exp_schedule(limit=10000))
+    if eight_queens_problem.value(solution) == 0 :
+        stadistic[3]+=1
+    print("solucion: {} con heuristica {}".format(solution,eight_queens_problem.value(solution)))
+
+print("de {} muestras,".format(samples))
+print("hillclimbing tuvo {} exitos".format(stadistic[0]))
+print("sideway tuvo {} exitos".format(stadistic[1]))
+print("random restart {} exitos".format(stadistic[2]))
+print("annealing {} ".format(stadistic[3]))
