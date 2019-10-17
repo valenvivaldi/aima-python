@@ -3,7 +3,7 @@ import random
 from deap import base
 from deap import creator
 from deap import tools
-
+ # https://deap.readthedocs.io/en/master/examples/ga_onemax.html
 n=8
 populationsize =2000
 selectionsize = populationsize//2
@@ -141,5 +141,5 @@ for ind in population:
         best=ind
         maxvalue = ind.fitness.values[0]
 
-print("una solucion es {} con  {}".format(best, heuristic2(best)))
+print("una solucion es {} con heuristica {}".format(best, heuristic2(best)))
 # endregion
