@@ -137,7 +137,7 @@ def gaschnig(node):
 
 def max_heuristic(node):
     score1 = manhattan(node)
-    score2 = linear(node)
+    score2 = gaschnig(node)
     return max(score1, score2)
 
 

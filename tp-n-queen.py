@@ -192,6 +192,10 @@ for state in generator(8,samples):
         stadistic[3]+=1
     print("solucion: {} con heuristica {}".format(solution,eight_queens_problem.value(solution)))
 
+    print("algoritmo genetico")
+
+
+
 print("de {} muestras,".format(samples))
 print("hillclimbing tuvo {} exitos".format(stadistic[0]))
 print("sideway tuvo {} exitos".format(stadistic[1]))

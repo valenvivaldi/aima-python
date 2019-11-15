@@ -1,22 +1,13 @@
 import random
+import time
 
 from deap import base
 from deap import creator
 from deap import tools
  # https://deap.readthedocs.io/en/master/examples/ga_onemax.html
-n=8
-populationsize =2000
-selectionsize = populationsize//2
 
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMax)
 
-toolbox = base.Toolbox()
-# Attribute generator
-toolbox.register("attr_bool", random.randint, 0, n-1)
-# Structure initializers
-toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, n)
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
 
 
 def heuristic2(individual):
@@ -45,101 +36,121 @@ def heuristic2(individual):
 def evaluateNQueen(individual):
     return heuristic2(individual),
 
+def algoritmoGeneticoNQueen(n=8,populationsize=1000,selectionsize=500):
+    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    creator.create("Individual", list, fitness=creator.FitnessMax)
 
-# region Description
-toolbox.register("evaluate", evaluateNQueen)
-toolbox.register("mate", tools.cxUniform,indpb=0.5)
-toolbox.register("mutate", tools.mutUniformInt,low=0,up=n-1, indpb=0.5)
-toolbox.register("select", tools.selRoulette, k=selectionsize)
+    toolbox = base.Toolbox()
+    # Attribute generator
+    toolbox.register("attr_bool", random.randint, 0, n-1)
+    # Structure initializers
+    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, n)
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-# print(evaluateNQueen([2,4,6,8,3,1,7,5]))
+    # region Description
+    toolbox.register("evaluate", evaluateNQueen)
+    toolbox.register("mate", tools.cxUniform,indpb=0.5)
+    toolbox.register("mutate", tools.mutUniformInt,low=0,up=n-1, indpb=0.5)
+    toolbox.register("select", tools.selRoulette, k=selectionsize)
 
-# creating population
+    # print(evaluateNQueen([2,4,6,8,3,1,7,5]))
 
-population = toolbox.population(n=populationsize)
+    # creating population
 
-# Evaluate the entire population
-fitnesses = list(map(toolbox.evaluate, population))
-for ind, fit in zip(population, fitnesses):
-    ind.fitness.values = fit
-# CXPB  is the probability with which two individuals
-#       are crossed
-#
-# MUTPB is the probability for mutating an individual
-CXPB, MUTPB = 0.5, 0.1
+    population = toolbox.population(n=populationsize)
 
-# Extracting all the fitnesses of
-fits = [ind.fitness.values[0] for ind in population]
-
-# Variable keeping track of the number of generations
-g = 0
-
-# Begin the evolution
-
-while max(fits) < 0 and g < 100000:
-   # print("poblacion inicial: {}".format(population))
-    population.sort(key=lambda x: x.fitness.values[0], reverse=True)  # se vuelve a ordenar la poblacion
-    # A new generation
-    g = g + 1
-    if (g % 1000 == 0):
-        print("-- Generation %i --" % g)
-    # Select the next generation individuals
-    offspring = toolbox.select(population)
-    #print("SELECIONO!             {}".format(len(offspring)))
-    # Clone the selected individuals
-    offspring = list(map(toolbox.clone, offspring))
-    # Apply crossover and mutation on the offspring
-
-    # Next, we will perform both the crossover (mating) and the mutation of the produced children
-    # with a certain probability of CXPB and MUTPB.
-
-    # The del statement will invalidate the fitness of the modified offspring.
-    for child1, child2 in zip(offspring[::2], offspring[1::2]):
-        if random.random() < CXPB:
-            toolbox.mate(child1, child2)
-            del child1.fitness.values
-            del child2.fitness.values
-
-    for mutant in offspring:
-        if random.random() < MUTPB:
-            toolbox.mutate(mutant)
-            del mutant.fitness.values
-
-    # Evaluate the individuals with an invalid fitness
-    invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-    fitnesses = map(toolbox.evaluate, invalid_ind)
-    for ind, fit in zip(invalid_ind, fitnesses):
+    # Evaluate the entire population
+    fitnesses = list(map(toolbox.evaluate, population))
+    for ind, fit in zip(population, fitnesses):
         ind.fitness.values = fit
-    # And last but not least, we replace the old population by the offspring.
+    # CXPB  is the probability with which two individuals
+    #       are crossed
+    #
+    # MUTPB is the probability for mutating an individual
+    CXPB, MUTPB = 0.5, 0.1
 
-
-    population.extend(offspring) #agregamosssssssss los nuevos descendientes a  la poblacion
-
-
-    population.sort(key=lambda x: x.fitness.values[0], reverse=True)  # se vuelve a ordenar la poblacion
-    population = population[0:populationsize]
-  #  print("el mejor hasta ahora es {} de la poblacion de {} ".format(population[0:5],len(population)))
-
-    # Gather all the fitnesses in one list and print the stats
+    # Extracting all the fitnesses of
     fits = [ind.fitness.values[0] for ind in population]
-    if (g % 1000 == 0):
+
+    # Variable keeping track of the number of generations
+    g = 0
+
+    # Begin the evolution
+    tiempo = time.time()
+    while max(fits) < 0 and g < 100000:
+       # print("poblacion inicial: {}".format(population))
+        population.sort(key=lambda x: x.fitness.values[0], reverse=True)  # se vuelve a ordenar la poblacion
+        # A new generation
+        g = g + 1
+        if (g % 1000 == 0):
+            print("-- Generation %i --" % g)
+        # Select the next generation individuals
+        offspring = toolbox.select(population)
+        #print("SELECIONO!             {}".format(len(offspring)))
+        # Clone the selected individuals
+        offspring = list(map(toolbox.clone, offspring))
+        # Apply crossover and mutation on the offspring
+
+        # Next, we will perform both the crossover (mating) and the mutation of the produced children
+        # with a certain probability of CXPB and MUTPB.
+
+        # The del statement will invalidate the fitness of the modified offspring.
+        for child1, child2 in zip(offspring[::2], offspring[1::2]):
+            if random.random() < CXPB:
+                toolbox.mate(child1, child2)
+                del child1.fitness.values
+                del child2.fitness.values
+
+        for mutant in offspring:
+            if random.random() < MUTPB:
+                toolbox.mutate(mutant)
+                del mutant.fitness.values
+
+        # Evaluate the individuals with an invalid fitness
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        fitnesses = map(toolbox.evaluate, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+        # And last but not least, we replace the old population by the offspring.
 
 
-        length = len(population)
-        mean = sum(fits) / length
-        sum2 = sum(x * x for x in fits)
-        std = abs(sum2 / length - mean ** 2) ** 0.5
+        population.extend(offspring) #agregamosssssssss los nuevos descendientes a  la poblacion
 
-        print("  Min %s" % min(fits))
-        print("  Max %s" % max(fits))
-        print("  Avg %s" % mean)
-        print("  Std %s" % std)
 
-maxvalue = -100
-for ind in population:
-    if ind.fitness.values[0] > maxvalue:
-        best=ind
-        maxvalue = ind.fitness.values[0]
+        population.sort(key=lambda x: x.fitness.values[0], reverse=True)  # se vuelve a ordenar la poblacion
+        population = population[0:populationsize]
+      #  print("el mejor hasta ahora es {} de la poblacion de {} ".format(population[0:5],len(population)))
 
-print("una solucion es {} con heuristica {}".format(best, heuristic2(best)))
+        # Gather all the fitnesses in one list and print the stats
+        fits = [ind.fitness.values[0] for ind in population]
+        if (g % 1000 == 0):
+
+
+            length = len(population)
+            mean = sum(fits) / length
+            sum2 = sum(x * x for x in fits)
+            std = abs(sum2 / length - mean ** 2) ** 0.5
+
+            print("  Min %s" % min(fits))
+            print("  Max %s" % max(fits))
+            print("  Avg %s" % mean)
+            print("  Std %s" % std)
+
+    maxvalue = -100
+    for ind in population:
+        if ind.fitness.values[0] > maxvalue:
+            best=ind
+            maxvalue = ind.fitness.values[0]
+    tiempo=time.time()-tiempo
+    return (best, heuristic2(best),tiempo)
+
+tiempopromedio =0
+for a in range(10):
+    print("a")
+    (mejor,heumejor,tiempores) = algoritmoGeneticoNQueen(8,2000,1000)
+    print("tiempo{} {}".format(a,tiempores))
+    tiempopromedio += tiempores
+    print("una solucion es {} con heuristica {} tiempo= {}".format(mejor, heumejor, tiempores))
+print(tiempopromedio / 10)
+
 # endregion
